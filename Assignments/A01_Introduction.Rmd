@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Student Name"
+author: "Atalie Fischer"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -16,27 +16,27 @@ This exercise accompanies the introductory material in Environmental Data Analyt
 6. When you have completed the assignment, **Knit** the text and code into a single PDF file.
 8. After Knitting, submit the completed exercise (PDF file) to the dropbox in Sakai. Add your last name into the file name (e.g., "Lima_A01_Introduction.Rmd") prior to submission.
 
-The completed exercise is due on <>.
+The completed exercise is due on <Mon 1/17/22 at 7pm>.
 
 ## 1) Discussion Questions
 
 1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: 
+> Answer: I took a Lab & Field Methods course in fulfilment of my environmental science undergraduate major where I learned how to use R to analyze large environmental datasets and produce reports using RMarkdown. I used the skills I learned in that course to complete an independent senior research project where I analyzed phosphorus sorption capacity of global soil orders. Because I had only learned the basics of R in the Lab & Field Methods course, I taught myself more advanced R coding to complete the soils project. My code worked well, although it was not very efficient. I continued a little bit with R in Martin Doyle's Hydrology class. The most "data wrangling" I have done was for GIS courses. I have never used Git before and this semester is my first introduction to it.
 
 2. Are there any components of the course about which you feel confident?
 
-> Answer: 
+> Answer: I feel most confident with data visualization using ggplot and modelling (i.e., linear models, ANOVAs). 
 
 3. Are there any components of the course about which you feel apprehensive?
 
-> Answer: 
+> Answer: I am apprehensive about spatial data analysis & visualization in R because I do not have any experience with it (I just learned this year that spatial data analysis is even possible in R). However, I am excited to learn about it!
 
 
 ## 2) GitHub
 
 Provide a link below to your forked course repository in GitHub. Make sure you have pulled all recent changes from the course repository  and that you have updated your course README file. 
 
-> Answer: 
+> Answer: https://github.com/atf35/Environmental_Data_Analytics_2022.git
 
 
