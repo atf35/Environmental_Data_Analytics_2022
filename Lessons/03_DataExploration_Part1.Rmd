@@ -35,7 +35,7 @@ If your working directory is not set to the folder you want, you have several op
 
 ```{r}
 # Absolute file path is commented out
-setwd("/Users/lmm89/OneDrive/Duke_University/7_Spring2021/ENV872_EDA/GitRepo_EDA_S2021/Environmental_Data_Analytics_2021")
+#setwd("/Users/lmm89/OneDrive/Duke_University/7_Spring2021/ENV872_EDA/GitRepo_EDA_S2021/Environmental_Data_Analytics_2021")
 ```
 
 You may change your working directory without coding by going to the Session menu in RStudio and navigating to the Set Working Directory tab. From there, you may select from a series of options to reset your working directory. 
@@ -78,7 +78,7 @@ library(tidyverse)
 
 Question: What happens in the console when you load a package?
 
-> Answer: 
+> Answer: The output in the concole shows that all the packages that are included in a single package. For example, the tidyverse package comes with tibble, tidyr, readr, purrr, stringr, and forcats. The output also shows any conflicts that may arise with other packages. For example, the "filter()" function works with both the dplyr and stats packages, but since the tidyverse package is loaded, the "filter()" function from the dyplyr package will be used over that of the stats package. 
 
 ### Import your datasets
 
@@ -100,7 +100,7 @@ Commons functions to import datasets and store as data frames are *read.table()*
 #read.csv("/Users/lmm89/OneDrive/Duke_University/7_Spring2021/ENV872_EDA/GitRepo_EDA_S2021/Environmental_Data_Analytics_2021/Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 
 # Relative file path (friendly for users regardless of machine)
-USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")   
+USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")  
 #For knitting the .Rmd file you need to added an extra "." to the relative path
 # R Markdown documents are compiled in separate R sessions to enhance reproducibility, so you current R console has nothing to do with the compilation of the R Markdown documents.
 
@@ -119,7 +119,7 @@ USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 ## EXPLORE YOUR DATASET
 
 Take a moment to read through the README file associated with the USGS dataset on discharge at the Eno River. Where can you find this file? How does the placement and information found in this file relate to the best practices for reproducible data analysis?
-> ANSWER: 
+> ANSWER: The README file associated with the USGS dataset on discharge at the Eno River can be found under ./Data/Metadata/. This file contains information on how the dataset was retrieved and from whom, and what data are included in the dataset. By saving it in a Metadata folder separate from the Raw data folder, one can easily find background information on the dataset without opening it or changing the original data. The README file is also useful for assigning new meaningful column names to the data that may have not been included in the raw data. For example, the raw data column names were given as a string of characters and numbers without any indication as to what they mean. The README file contains information for what these actually represent. 
 
 ```{r exploredata}
 View(USGS.flow.data)
@@ -136,25 +136,25 @@ colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime",
                               "gage.height.max", "gage.height.max.approval", 
                               "gage.height.min", "gage.height.min.approval", 
                               "gage.height.mean", "gage.height.mean.approval")
-str(USGS.flow.data)
-dim(USGS.flow.data)
-length(USGS.flow.data)
+str(USGS.flow.data) #show dataframe and all the objects in it
+dim(USGS.flow.data) #how many rows and columns
+length(USGS.flow.data) #how many columns
 
-head(USGS.flow.data)
-head(USGS.flow.data, 10)
-tail(USGS.flow.data, 5)
-USGS.flow.data[30000:30005, c(3, 8, 14)]
+head(USGS.flow.data) #show first few rows (default 6 first rows)
+head(USGS.flow.data, 10) #show first 10 rows
+tail(USGS.flow.data, 5) #show last 5 rows
+USGS.flow.data[30000:30005, c(3, 8, 14)] #show a certain block of the dataset (rows 3000-3005 and columns 3, 8, and 14) 
 
-class(USGS.flow.data$datetime)
+class(USGS.flow.data$datetime) #show datatype of single column of dataset
 class(USGS.flow.data$discharge.mean)
 class(USGS.flow.data$gage.height.mean)
 
-summary(USGS.flow.data)  #could point to column only with $
+summary(USGS.flow.data)  #Show min/mean/max/quartiles. could point to column only with $
 
 ```
 
 What happened to blank cells in the spreadsheet when they were imported into R?
-> Answer: 
+> Answer: Blank cells in the spreadsheet are left blank or contain "NA" when imported into R. 
 
 ## Adjusting Datasets
 
@@ -168,10 +168,10 @@ summary(USGS.flow.data$gage.height.mean)
 ```
 Question: What types of research questions might make it favorable to remove NAs from a dataset, and what types of research questions might make it favorable to retain NAs in the dataset?
 
-> Answer: 
+> Answer: It is favorable to remove NAs from a dataset when interested in research questions relating to the mean. When working with time series data, it is favorable to remove NAs from time periods that pre-date the analysis. However, generally, NAs should be retained when located in the middle of time series datasets. 
 
 ```{r removeNA}
-USGS.flow.data.complete <- na.omit(USGS.flow.data)
+USGS.flow.data.complete <- na.omit(USGS.flow.data) #remove NA and store as a new dataset as to not change the raw data
 dim(USGS.flow.data)
 dim(USGS.flow.data.complete)
 
@@ -202,16 +202,16 @@ In some cases when dates are provided as integers, you may need to provide an or
 help(as.Date)
 
 
-USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%m/%d/%y") 
+USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%m/%d/%y") #specify column that you want to change and the format that it is already in to convert it into the internationally recognized format. PROBLEM: R reads the dates in the 2000s instead of the 1900s when before 1969. 
 ```
 
 Note that for every date prior to 1969, R has assigned the date in the 2000s rather than the 1900s. This can be fixed with an `ifelse` statement inside a function. Run through the code below and write what is happening in the comment above each line.
 
 ```{r fixformartDate}
-# 
-USGS.flow.data$datetime <- format(USGS.flow.data$datetime, "%y%m%d")
+# convert date object back into a character object using "format()" function
+USGS.flow.data$datetime <- format(USGS.flow.data$datetime, "%y%m%d") 
 
-#
+# Add a "19" before objects with dates less than 191226 (--> 1919/12/26) and add a "20" before objects with dates greater than 191226 (--> 2019/12/26) *****????*****
 create.early.dates <- (function(d) {
        paste0(ifelse(d > 191226,"19","20"),d)
        })
