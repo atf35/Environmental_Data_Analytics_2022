@@ -15,6 +15,8 @@ A **data frame** is used for storing data tables. It a list a vector of equal le
 
 When we import data to R, data frame is the preferred way for storing the data because columns can have different modes (character, numeric, integer, logical, complex).
 
+(Matrices have all columns with the same data type.)
+
 
 ## Data frame built-in example
 
@@ -22,6 +24,8 @@ Let's look into a built-in data frame from package "datasets" - cars. The data g
 
 ```{r cars}
 cars
+
+#dbl = real numbers
 ```
 
 Note that it has 2 columns and 50 rows.
@@ -38,7 +42,7 @@ How would you store it on another object?
 
 ```{r}
 car_speed <- cars$speed
-car_speed
+car_speed #list of numbers = vector (not a dataframe)
 ```
 
 
@@ -47,10 +51,10 @@ car_speed
 Is the new object you create a data frame?
 ```{r}
 #Option 1
-class(car_speed)
+class(car_speed) #numeric vector
 
 #Option 2
-is.data.frame(car_speed)
+is.data.frame(car_speed) #TURE/FALSE
 ```
 
 How could you make it a data frame?
@@ -58,7 +62,7 @@ How could you make it a data frame?
 ```{r}
 df_car_speed <- as.data.frame(car_speed)
 df_car_speed
-class(df_car_speed)
+class(df_car_speed) #"data.frame"
 ```
 
 ## Adding columns to a data frame
@@ -68,8 +72,8 @@ How could you add columns to *df_car_speed*?
 ```{r}
 car_dist <- cars$dist
 
-#Option 1
-df <- cbind(df_car_speed,car_dist)  #similarly rows could be added using rbind()
+#Option 1: use cbind() to bind columns together that have the same number of rows
+df <- cbind(df_car_speed,car_dist)  #similarly rows could be added using rbind(). For example, when there are new observations to add to the existing data. 
 class(df)
 df
 
@@ -84,8 +88,8 @@ df_opt2
 Note that when we transformed the vector in a data frame the name of the vector became the column name.
 
 ```{r}
-colnames(df)  #or simply names()
-names(df)
+colnames(df)  #can use this function to change the names of columns too
+names(df) #or simply names()
 ```
 
 ## Creating a data frame
@@ -108,10 +112,12 @@ ncol(df)
 nrow(df)  
 length(df)  #same as ncol
 summary(df)
-head(df) #show the first 6 rows of df
+head(df) #show the first 6 rows of df. tail() shows the last 6 rows of the df. 
 
 #If you know the number of the column you want you can refer to that to access column
-df[,1]
+df[,1] #call first column of the df (format is [rows, columns])
+df_2 <- df[1:10, 1:2]
+df_2
 
 #you could also use this notation to delete columns
 df <- df[,-2]
