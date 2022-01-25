@@ -113,6 +113,8 @@ USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 # To import .txt files, use read.table rather than read.csv
 #read.table()
 
+#" , stringsAsFactors = TRUE" <- add this to the end of importing the .csv to categorize data. logical: should character vectors be converted to factors?
+
 ```
 
 
