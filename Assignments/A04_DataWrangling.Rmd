@@ -155,8 +155,16 @@ EPA.air.data.spread.SUMMARY <-
          meanAQI.PM25 = mean(PM2.5)) %>% 
   filter(!is.na(meanAQI.Ozone) & !is.na(meanAQI.PM25))
 
+EPA.air.data.spread.SUMMARY2 <- 
+  EPA.air.data.summaries.spread %>% 
+  group_by(Site.Name, Month, Year) %>% 
+  summarise(meanAQI.Ozone = mean(Ozone),
+         meanAQI.PM25 = mean(PM2.5)) %>% 
+  filter(is.na(meanAQI.Ozone) & is.na(meanAQI.PM25))
+
 #13
 dim(EPA.air.data.spread.SUMMARY)
+dim(EPA.air.data.spread.SUMMARY2)
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
