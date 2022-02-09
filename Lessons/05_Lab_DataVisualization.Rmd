@@ -38,6 +38,7 @@ library(ggridges)
 library(viridis)
 library(RColorBrewer)
 library(colormap)
+library(lubridate)
 
 PeterPaul.chem.nutrients <- 
   read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
@@ -60,6 +61,16 @@ Exercise: build your own scatterplots of PeterPaul.chem.nutrients
 # Color your points by year, and facet by lake in two rows.
 # Change the ylab name
 
+theme_set(theme_classic())
+
+temp.scatter <- 
+  ggplot(subset(PeterPaul.chem.nutrients, depth == 0)) + 
+  geom_point(aes(x=daynum, y = temperature_C, color = year4)) +
+  scale_y_reverse() +
+  facet_wrap(lakename, nrow = 2) +
+  ylab(expression("Temperature (C)"))
+print(temp.scatter)
+
 
 #2. 
 # Plot temperature by date. Color your points by depth.
@@ -67,7 +78,10 @@ Exercise: build your own scatterplots of PeterPaul.chem.nutrients
 # Change the color palette to magma and play with direction (+- 1), which one makes more sense?
 # Change x axis to include marker/labels every 5 years
 
-
+ggplot(PeterPaul.chem.nutrients, aes(x = sampledate, y = temperature_C, color = depth)) +
+  geom_point(size = 0.5) +
+  scale_color_viridis(option = "magma", direction = -1) +
+  scale_x_date(date_breaks = "5 years", date_labels = '%Y')
 
 
 ```
@@ -82,7 +96,9 @@ Exercise: Plot relationships between air quality measurements
 # Make the points 50 % transparent
 # Add a line of best fit for the linear regression of these variables.
 
-
+ggplot(EPAair, aes(x = PM2.5, y = Ozone, color = meanLat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = lm, color = "red")
 
 
 ```
@@ -113,8 +129,14 @@ The following graph displays the counts of specific endpoints measured in neonic
 ```{r}
 
 Neonics <- read.csv("./Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.csv")
+
+str(as.factor(Neonics$Endpoint))
+Neonics$Endpoint <- reorder(Neonics$Endpoint, Neonics$Endpoint, FUN = length)
+
 ggplot(Neonics) +
-  geom_bar(aes(x = Endpoint))
+  geom_bar(aes(x = Endpoint)) +
+  scale_x_discrete(limits = rev(levels(Neonics$Endpoint))) +
+  theme(axis.text.x = element_text(angle = 45,  hjust = 1))
 
 
 
