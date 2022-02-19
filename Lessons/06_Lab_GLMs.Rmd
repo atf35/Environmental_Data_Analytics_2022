@@ -18,6 +18,7 @@ editor_options:
 ## Set up
 ```{r, message = FALSE}
 library(tidyverse)
+#install.packages("agricolae")
 library(agricolae)   
 
 PeterPaul.chem.nutrients <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
@@ -66,12 +67,10 @@ Are Ozone levels below the threshold for "good" AQI index (0-50)?
 
 > Exercise 1: State the hypotheses for testing mean of AQI index.
 
-> Answer: 
-
+> Answer: Null - is the mean AQI less greater than 50?
+          Alternative - the mean AQI is equal to 50?
 
 ```{r}
-
-
 summary(EPAair$Ozone)
 EPAair.subsample <- sample_n(EPAair, 5000)
 
@@ -81,8 +80,12 @@ ggplot(EPAair, aes(x = Ozone)) +
   geom_histogram() 
 qqnorm(EPAair$Ozone); qqline(EPAair$Ozone)
 
+#histogram
+hist(EPAair.subsample$Ozone)
+
 O3.onesample <- t.test(EPAair$Ozone, mu = 50, alternative = "less")
 O3.onesample
+#we are sufficiently below air quality 
 
 Ozone.plot <- ggplot(EPAair, aes(x = Ozone)) +
   #geom_density(stat = "count", fill = "gray") +
