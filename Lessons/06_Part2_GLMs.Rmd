@@ -12,6 +12,30 @@ editor_options:
 2. Apply special cases of the GLM (ANOVA) to real datasets
 3. Interpret and report the results of ANOVA in publication-style formats
 
+### One-Way Analysis of Variance
+
+It is a common situation when someone needs to determine whether three or more populations have equal means. To answer that question, we need to conduct a formal hypothesis test.
+
+    H_{0}: \mu_{1} = \mu_{2} = \mu_{3} = \mu_{4} = ... \mu_{k}
+    H_{A}: not all \mu_{j} are equal
+    
+The statistical method for conducting this test is called **Analysis of Variance - ANOVA**.
+
+Example: A sandwich shop is interested in testing to see whether the mean value for customer orders is equal at the company's four store locations. Eight orders from each store are randomly selected. 
+    
+    Single factor - customer order value
+    Four levels - the four store locations
+    Sample size - 8 at each store
+    
+**Factor**: a quantity under examination in an experiment as a possible cause of variation in the response variable
+**Levels**: the categories, measurements, or strata of a factor of interest in the current experiment - also called **populations**
+**Balanced Design**: an experiment has a balanced design if the factor levels have equal sample sizes
+
+**One-Way ANOVA Assumptions**
+* All populations are normally distributed
+* The population variances are equal
+* The observations are independent - that is, the occurence of any one individual value does not affect the probability that any other observation will occur
+
 ## Set up
 ```{r, message = FALSE}
 getwd()
@@ -19,7 +43,7 @@ library(tidyverse)
 #install.packages("agricolae")
 library(agricolae)   #you may need to install/update package "htmltools" before installing and loading agricolae
 
-Litter <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
+Litter <- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
 
 # Set date to date format
 Litter$collectDate <- as.Date(Litter$collectDate , format = "%Y-%m-%d")
@@ -50,26 +74,28 @@ summary(Litter.Totals$plotID)
 # not necessarily normality of raw data. See below when we plot the model.
 # shapiro.test() performs the Shapiro-Wilk test of the null that data follows a normal distribution
 
-shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_040"])
+shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_040"]) #p-value < 0.05, we reject the null hypothesis that the data is normally distributed
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_041"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_046"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_047"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_051"])
-shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_057"])
+shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_057"]) #normally distributed
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_058"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_061"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_062"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_063"])
-shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_064"])
+shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_064"]) # normally distributed
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_067"])
 
 #results: reject null in all except two: NIWO_057 and NIWO_046
-qqnorm(Litter.Totals$dryMass); qqline(Litter.Totals$dryMass)
+qqnorm(Litter.Totals$dryMass); qqline(Litter.Totals$dryMass) #not normally distributed
 
 # Test for equal variance
 # ANOVA is robust against departures from equal variance.
-# bartlett.test() performs Bartlett's test of the null that the variances in each of the groups (samples) are the same.
-bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID)
+# bartlett.test() performs Bartlett's test of the null that the variances 
+#     in each of the groups (samples) are the same.
+bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID) 
+#p-value < 0.05, we reject the null hypothesis that the data is normally distributed
 
 #results: reject null i.e. variances are not equal
 
@@ -77,7 +103,7 @@ bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID)
 Litter.Totals.anova <- aov(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova)
 
-#results: reject null hypothesis i.e. difference between a pair of group means is statiscally significant
+#results: reject null hypothesis i.e. difference between a pair of group means is statistically significant
 
 # Format ANOVA as lm
 Litter.Totals.anova2 <- lm(data = Litter.Totals, dryMass ~ plotID)
@@ -86,13 +112,21 @@ summary(Litter.Totals.anova2)
 # Checking model fit and assumptions
 # ANOVA is robust against departures from normality.
 plot(Litter.Totals.anova2)
+```
 
+### Post Hoc Test with ANOVA
+
+When you use ANOVA to test the equality of at least three group means, statistically significant results indicate that not all of the group means are equal. However, ANOVA results do not identify which particular differences between pairs of means are significant. Use post hoc tests to explore differences between multiple group means. **Tukey HSD (Tukey Honest Significant Differences)** method is the most common for comparing all possible group pairings. 
+
+
+```{r}
 # Post-hoc test
 # TukeyHSD() computes Tukey Honest Significant Differences
 TukeyHSD(Litter.Totals.anova)
 
 # Extract groupings for pairwise relationships
-Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
+Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE) 
+# group = TRUE --> group levels with the same mean
 Litter.Totals.groups
 
 # Graph the results
@@ -109,7 +143,7 @@ print(Litter.Totals.plot)
 
 What information does the output give us? How might we report this information in a report?
 
-> 
+> Re-order the sites so that they are grouped by those with the same mean
 
 ## TWO-WAY ANOVA
 ### Main effects
@@ -122,10 +156,10 @@ summary(Litter.anova.2way)
 
 # Format as lm
 Litter.anova.2way2 <- lm(data = Litter, dryMass ~ functionalGroup + nlcdClass)
-summary(Litter.anova.2way2)
+summary(Litter.anova.2way2) #reject null hypothesis: mean between the groups are different
 
 # Run a post-hoc test for pairwise differences
-TukeyHSD(Litter.anova.2way)
+TukeyHSD(Litter.anova.2way) 
 
 ```
 
@@ -136,8 +170,9 @@ The output gives test statistics for each explanatory variable as well as the in
 
 ```{r}
 # Format as aov
-Litter.anova.2way3 <- aov(data = Litter, dryMass ~ functionalGroup * nlcdClass)
-summary(Litter.anova.2way3)
+Litter.anova.2way3 <- aov(data = Litter, dryMass ~ functionalGroup * nlcdClass) 
+# use "*" to see interaction.
+summary(Litter.anova.2way3) # interaction shown in summary using ":"
 
 # Format as lm
 Litter.anova.2way4 <- lm(data = Litter, dryMass ~ functionalGroup * nlcdClass)
@@ -150,11 +185,11 @@ If the interaction is significant, we interpret pairwise differences for the int
 # Run a post-hoc test for pairwise differences
 TukeyHSD(Litter.anova.2way3)
 
-Litter.interaction <- with(Litter, interaction(functionalGroup, nlcdClass))
+Litter.interaction <- with(Litter, interaction(functionalGroup, nlcdClass)) 
 
-#Litter.test <- cbind(Litter,Litter.interaction)
+#Litter.test <- cbind(Litter, Litter.interaction)
 
-Litter.anova.2way5 <- aov(data = Litter, dryMass ~ Litter.interaction)
+Litter.anova.2way5 <- aov(data = Litter, dryMass ~ Litter.interaction) #one way anova but with ineraction
 
 Litter.groups <- HSD.test(Litter.anova.2way5, "Litter.interaction", group = TRUE)
 Litter.groups
@@ -163,7 +198,10 @@ Litter.groups
 # Edit this graph to make it more visually appealing.
 # Add letters to represent statistical groupings.
 Litter.anova.plot <- ggplot(Litter, aes(y = dryMass, x = nlcdClass, color = functionalGroup)) +
-  geom_boxplot()
+  geom_boxplot() +
+  stat_summary(geom = "text", fun = max, vjust = -1, size = 3.5,
+               label = c("a", "b", "bc", "cd", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d", "d")) +
+  labs(x = "Land Cover Class", y = "Dry Mass (g)")
 print(Litter.anova.plot)
 
 ```

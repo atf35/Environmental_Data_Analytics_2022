@@ -16,7 +16,11 @@ editor_options:
 
 ## Generalized Linear Models (GLMs)
 
-The analysis of variance (ANOVA), and linear regression are special cases of the **generalized linear model** (GLM). The GLM also includes analyses not covered in this class, including logistic regression, multinomial regression, chi square, and log-linear models. The common characteristic of general linear models is the expression of a continuous response variable as a linear combination of the effects of categorical or continuous explanatory variables, plus an error term that expresses the random error associated with the coefficients of all explanatory variables. The explanatory variables comprise the deterministic component of the model, and the error term comprises the stochastic component of the model. Historically, artificial distinctions were made between linear models that contained categorical and continuous explanatory variables, but this distinction is no longer made. The inclusion of these models within the umbrella of the GLM allows models to fit the main effects of both categorical and continuous explanatory variables as well as their interactions. 
+The analysis of variance (ANOVA), and linear regression are special cases of the **generalized linear model** (GLM). The GLM also includes analyses not covered in this class, including logistic regression, multinomial regression, chi square, and log-linear models. The common characteristic of general linear models is the expression of a continuous response variable as a linear combination of the effects of categorical or continuous explanatory variables, plus an error term that expresses the random error associated with the coefficients of all explanatory variables. The explanatory variables comprise the deterministic component of the model, and the error term comprises the stochastic component of the model. 
+
+> Data (continuous variable y) = model (type of model depends on one or more variables x1, x2, ..., xn, which can be continuous or categorical) + residual or error term (GLM is based on the assumption that the data residuals approximate a normal distribution)
+
+Historically, artificial distinctions were made between linear models that contained categorical and continuous explanatory variables, but this distinction is no longer made. The inclusion of these models within the umbrella of the GLM allows models to fit the main effects of both categorical and continuous explanatory variables as well as their interactions. 
 
 ### Choosing a model from your data: A "cheat sheet"
 
@@ -24,7 +28,7 @@ The analysis of variance (ANOVA), and linear regression are special cases of the
 
 **Two-way ANOVA (Analysis of Variance)** Continuous response, two categorical explanatory variables.
 
-**Single Linear Regression** Continuous response, one continuous explanatory variable.
+**Single (Simple) Linear Regression** Continuous response, one continuous explanatory variable.
 
 **Multiple Linear Regression** Continuous response, two or more continuous explanatory variables.
 
@@ -32,10 +36,22 @@ The analysis of variance (ANOVA), and linear regression are special cases of the
 
 If multiple explanatory variables are chosen, they may be analyzed with respect to their **main effects** on the model (i.e., their separate impacts on the variance explained) or with respect to their **interaction effects,** the effect of interacting explanatory variables on the model. 
 
+### Review of Hypothesis Testing
+
+We use hypothesis testing to (1) analyze evidence provided by data and (2) make decisions based on data. A **statistical hypothesis** is an assumption about a population parameter that may or may not be true (i.e. is the mean and variance of our sample representative of the mean and variance of the population?). We usually have **H0** the null hypothesis and **H1** the alternative hypothesis (opposite of the null hypothesis). The results of our test will tell us whether we can accept or reject the null hypothesis. 
+
+This is the basic procedure of hypothesis testing:
+1. State the hypothesis and identify the claim
+2. Find the critical value(s) from the appropriate table
+3. Compute the test value
+4. Make the decision to reject or not reject the null hypothesis.
+          If P-value =< alpha, there is enough evidence to **reject** the null hypothesis. 
+          If P-value > alpha, there is not enough evidence to reject the null hypothesis, so we **do not reject** the null hypothesis.
+
+
 ### Assumptions of the GLM
 
 The GLM is based on the assumption that the data residuals approximate a normal distribution (or a linearly transformed normal distribution). We will discuss the non-parametric analogues to several of these tests if the assumptions of normality are violated. For tests that analyze categorical explanatory variables, the assumption is that the variance in the response variable is equal among groups. Note: environmental data often violate the assumptions of normality and equal variance, and we will often proceed with a GLM even if these assumptions are violated. In this situation, justifying the decision to proceed with a linear model must be made.
-
 
 ## Set up
 ```{r, message = FALSE}
@@ -43,7 +59,7 @@ getwd()
 library(tidyverse)
 options(scipen = 4)
 
-PeterPaul.chem.nutrients <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
+PeterPaul.chem.nutrients <- read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
 
 # Set theme
 mytheme <- theme_classic(base_size = 14) +
@@ -56,7 +72,7 @@ theme_set(mytheme)
 A linear regression is comprised of a continuous response variable, plus a combination of 1+ continuous response variables (plus the error term). The deterministic portion of the equation describes the response variable as lying on a straight line, with an intercept and a slope term. The equation is thus a typical algebraic expression: 
 $$ y = \alpha + \beta*x + \epsilon $$
 
-The goal for the linear regression is to find a **line of best fit**, which is the line drawn through the bivariate space that minimizes the total distance of points from the line. This is also called a "least squares" regression. The remainder of the variance not explained by the model is called the **residual error.** 
+**Regression** is a technique for fitting a line to a set of data points. The goal for the linear regression is to find a **line of best fit**, which is the line drawn through the bivariate space that minimizes the total distance of points from the line. This is also called a "least squares" regression. The remainder of the variance not explained by the model is called the **residual error.** 
 
 The linear regression will test the null hypotheses that
 
@@ -69,10 +85,36 @@ Important components of the linear regression are the correlation and the R-squa
 
 ## Simple Linear Regression
 
+A **simple linear regression** is the simplest form of regression that involves a linear relationship between two variables. The object of a simple linear regression is to obtain an equation of a straight line that minimizes the sum of squared vertical deviations from the line (i.e., the least squares criterion). 
+
+The results of a simple linear regression will always show the standard error of the estimate. The **standard error** is a measure of the scatter of points around a regression line. If the standard error is relatively small, the predictions using the linear equation will tend to be more accurate than if the standard error is larger. 
+
+$$S_{e} = \sqrt(\frac{\sum y-y_{c}^2}{n-2})$$
+      where S_{e} = standard error of estimate
+            y = y value of each data point
+            n = number of data points
+            
+The **correlation coefficient, r** is a measure of the strength and direction of relationship between two variables, and ranges between -1.00 and +1.00.
+
+$$r = \frac{n(\sum xy) - (\sum x)(\sum y)}{\sqrt([n(\sum x)^{2}]*[n(\sum y^{2})-(\sum y)^{2}])}$$
+There is a positive correlation when the slope is positive, no correlation when the slope is zero, and a negative correlation when the slope is negative. 
+
+**r^2, square of the correlation coefficient** is a measure of the percentage of variability in the values of y that is "explained" by the independent variable, and ranges between 0 and 1.00. An r^2 value close to 1 means that almost all the variation in the y-variable is explained by the x-variable. 
+
+After fitting a regression model, check the **residual** plots first to be sure that you have unbiased estimates. This will help us answer questions such as:
+      * Do the residuals follow a normal distribution?
+      * Do we have unbiased estimates?
+      * Is there a correlation in our residual series?
+which will help us determine if we need more explanatory variables in our model. 
+
+The **p-values** for the coefficients indicate whether these relationships are statistically significant (i.e., determine whether the relationships that you observe in your sample also exist in the larger population). The p-value for each independent variable tests the null hypothesis (H0: independent variable as no correlation with the dependent variable). If the p-value for a variable is less than your significance level, your sample data provide enough evidence to reject the null hypothesis for the entire population (if the p-value < alpha, there is significant correlation with the dependent variable, and the addition of x to the model is worthwhile).
+
+
+
 For the NTL-LTER dataset, can we predict irradiance (light level) from depth?
 
 ```{r}
-irradiance.regression <- lm(PeterPaul.chem.nutrients$irradianceWater ~ PeterPaul.chem.nutrients$depth)
+irradiance.regression <- lm(PeterPaul.chem.nutrients$irradianceWater ~ PeterPaul.chem.nutrients$depth) #lm = linear model: y ~ x
 
 # another way to format the lm() function
 irradiance.regression <- lm(data = PeterPaul.chem.nutrients, irradianceWater ~ depth)
@@ -83,46 +125,53 @@ cor.test(PeterPaul.chem.nutrients$irradianceWater, PeterPaul.chem.nutrients$dept
 ```
 Question: How would you report the results of this test (overall findings and report of statistical output)?
 
->  
+> H0: Irradiance is not related to depth.
+  HA: Irradiance is related to depth. 
+  The line of best fit through our sample data is Irradiance = -95.890*Depth + 486.818, meaning that irradiance decreases with depth. With a p-value < 2.2e-16, our results are significant and there is sufficient evidence to reject the null hypothesis. The residual standard error is 303.4 and the r^2 value is 0.3091, meaning that approximately 30% of the variance in irradiance can be explained by depth. 
+  The correlation coefficient is -0.556, meaning that there is significant negative correlation between irradiance and depth. 
 
-So, we see there is a significant negative correlation between irradiance and depth (lower light levels at greater depths), and that this model explains about 31 % of the total variance in irradiance. Let's visualize this relationship and the model itself. 
+So, we see there is a significant negative correlation between irradiance and depth (lower light levels at greater depths), and that this model explains about 31% of the total variance in irradiance. Let's visualize this relationship and the model itself. 
 
 An exploratory option to visualize the model fit is to use the function `plot`. This function will return four graphs, which are intended only for checking the fit of the model and not for communicating results. The plots that are returned are: 
 
 1. **Residuals vs. Fitted.** The value predicted by the line of best fit is the fitted value, and the residual is the distance of that actual value from the predicted value. By definition, there will be a balance of positive and negative residuals. Watch for drastic asymmetry from side to side or a marked departure from zero for the red line - these are signs of a poor model fit.
+> We want the red line to be as flat as possible and symmetrical. Look for outliers!
 
-2. **Normal Q-Q.** The points should fall close to the 1:1 line. We often see departures from 1:1 at the high and low ends of the dataset, which could be outliers. 
+2. **Normal Q-Q.** The points should fall close to the 1:1 line if the data follow a normal distribution. We often see departures from 1:1 at the high and low ends of the dataset, which could be outliers. 
+> The dashed line shows the normal quantile-quantile for a normal distribution. We want our data to be as close to this line as possible. Look for outliers!
 
 3. **Scale-Location.** Similar to the residuals vs. fitted graph, this will graph the squared standardized residuals by the fitted values. 
+> Fitted values compared to the squared residuals. Look for symmetry in the red line. 
 
 4. **Residuals vs. Leverage.** This graph will display potential outliers. The values that fall outside the dashed red lines (Cook's distance) are outliers for the model. Watch for drastic departures of the solid red line from horizontal - this is a sign of a poor model fit.
+> This plot show outliers outside the two dashed red lines. Points that drastically deviate from the solid red line will indicate poor model fit. 
 
 ```{r, fig.height = 3, fig.width = 4}
-par(mfrow = c(2,2), mar=c(4,4,4,4))
+par(mfrow = c(2,2), mar=c(2,2,2,2)) #mfrow --> divide plot screen into four cell in a 2x2 grid. mar --> defines the dimensions of each plot (size of each window)
 plot(irradiance.regression)
 par(mfrow = c(1,1))
 ```
 
-The option best suited for communicating findings is to plot the explanatory and response variables as a scatterplot. 
+The option best suited for communicating findings is to plot the explanatory and response variables as a scatterplot.
 
 ```{r, fig.height = 3, fig.width = 4}
 # Plot the regression
 irradiancebydepth <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
-  ylim(0, 2000) +
+  ylim(0, 2000) + #does not remove the outlier from the data, but easier to view the data without the outlier
   geom_point() 
 print(irradiancebydepth) 
 ```
 
-Given the distribution of irradiance values, we don't have a linear relationship between x and y in this case. Let's try log-transforming the irradiance values. Note we also removing the observations that seems to ba an outlier.
+Given the distribution of irradiance values, we don't have a linear relationship between x and y in this case. The data is highly skewed right. Let's try log-transforming the irradiance values. Note we also remove the observations that seems to ba an outlier.
 
 ```{r, fig.height = 3, fig.width = 4}
 PeterPaul.chem.nutrients <- filter(PeterPaul.chem.nutrients, 
-                                   irradianceWater != 0 & irradianceWater < 5000)
+                                   irradianceWater != 0 & irradianceWater < 5000) #remove outliers and remove 0's so we can log-transform
 irradiance.regression2 <- lm(data = PeterPaul.chem.nutrients, log(irradianceWater) ~ depth)
 summary(irradiance.regression2)
 
-par(mfrow = c(2,2), mar=c(4,4,4,4))
+par(mfrow = c(2,2), mar=c(2,2,2,2))
 plot(irradiance.regression2)
 par(mfrow = c(1,1))
 
@@ -130,7 +179,7 @@ par(mfrow = c(1,1))
 irradiancebydepth2 <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
   geom_smooth(method = "lm") +
-  scale_y_log10() +
+  scale_y_log10() + 
   geom_point() 
 print(irradiancebydepth2) 
 
@@ -139,7 +188,7 @@ irradiancebydepth2 <-
     ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
     geom_point() +
     scale_y_log10() +  #log transformed values for irradianceWater
-    geom_smooth(method = 'lm', se = FALSE, color = "black")
+    geom_smooth(method = 'lm', se = FALSE, color = "black") #remove confidence interval on plot
 print(irradiancebydepth2)
 
 # Make the graph attractive
@@ -160,7 +209,7 @@ TPplot <- ggplot(subset(PeterPaul.chem.nutrients, lakename == "Paul Lake"),
   xlim(0, 20)
 print(TPplot)
 
-par(mfrow = c(2,2), mar=c(4,4,4,4))
+par(mfrow = c(2,2), mar=c(2,2,2,2))
 plot(TPregression)
 par(mfrow = c(1,1))
 
@@ -176,14 +225,16 @@ PeterPaulnutrients <-
   PeterPaul.chem.nutrients %>%
   select(tn_ug:po4) %>%
   na.omit()
+
+# look at correlation coefficients to find additional variables to add to the model
 PeterPaulCorr <- cor(PeterPaulnutrients)
-corrplot(PeterPaulCorr, method = "ellipse")
-corrplot.mixed(PeterPaulCorr, upper = "ellipse")
+corrplot(PeterPaulCorr, method = "ellipse") # correlation plot matrix. Diagonal line represents perfect correlation. Darker blue gives higher positive correlation. Stretch of ellipse shows greater correlation.
+corrplot.mixed(PeterPaulCorr, upper = "ellipse") # mixed correlation plot of both ellipses and numbers because the upper and lower represent the same relationships. defining upper as ellipse tells R to keep ellipses on top and numbers on bottom. from this plot, we can see that tp_ug, nh34, and no23 may be good variables to add to our model.
 ```
 
 ## AIC to select variables
 
-However, it is possible to over-parameterize a linear model. Adding additional explanatory variables takes away degrees of freedom, and if explanatory variables co-vary the interpretation can become overly complicated. Remember, an ideal statistical model balances simplicity and explanatory power! To help with this tradeoff, we can use the **Akaike's Information Criterion (AIC)** to compute a stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options. The smaller the AIC value, the better. 
+However, it is possible to over-parameterize a linear model. Adding additional explanatory variables takes away degrees of freedom, and if explanatory variables co-vary the interpretation can become overly complicated. Remember, an ideal statistical model balances simplicity and explanatory power! To help with this trade-off, we can use the **Akaike's Information Criterion (AIC)** to compute a stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options. The smaller the AIC value, the better. 
 
 Let's say we want to know which explanatory variables will allow us to best predict total phosphorus concentrations. Potential explanatory variables from the dataset could include depth, dissolved oxygen, temperature, PAR, total N concentration, and phosphate concentration.
 
@@ -193,11 +244,11 @@ Paul.naomit <- PeterPaul.chem.nutrients %>%
   na.omit()
 
 TPAIC <- lm(data = Paul.naomit, tp_ug ~ depth + dissolvedOxygen + 
-              temperature_C + tn_ug + po4)
+              temperature_C + tn_ug + po4) #consider all variables to be explanatory variables
 
 #Choose a model by AIC in a Stepwise Algorithm
 step(TPAIC)
 TPmodel <- lm(data = Paul.naomit, tp_ug ~ dissolvedOxygen + temperature_C + tn_ug)
-summary(TPmodel)
+summary(TPmodel) # removing variables to see how much the AIC reduces. oxygen, temperature, and nitrogen gives the best fit because it has the lowest AIC. however, in this example, it is worse than our original model. most cases, the AIC improves. 
 
 ```
