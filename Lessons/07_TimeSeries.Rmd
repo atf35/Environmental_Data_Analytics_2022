@@ -13,6 +13,177 @@ editor_options:
 2. Explore the components of times series: trend, seasonal, random
 3. Learn how to perform stationarity test
 
+## lesson on Time Series Analysis
+
+### Main questions
+
+1. Has there been an increasing or decreasing *trend* in the response variable over time?
+2. Can we *forecast* conditions in the future?
+
+#### Learning Goals
+
+* Introduction to Time Series Analysis (TSA)
+        + What is TSA>
+        + Examples
+        + TSA Components (trend, cycle, seasonal, random)
+* Autocorrelation Function (ACF)
+* Partial Autocorrelation Function (PACF)
+* Trend and Seasonal Component
+* Stationary Tests
+
+### Introduction to Time Series Analysis
+
+#### Meaning and Definitions
+
+**What is a Time Series?**
+* A set of observations on a variable collected over time
+* Discrete and continuous time series
+      + Example: stock prices, interest rate, retail sales, electric power consumption, etc.
+* Mathematical representation: a time series is defined by the values $Y_1, Y_2, ...$ of a variable $Y$ at times $t_1, t_2, ...$
+        Thus, $Y = F(t)$
+        
+**What is Time Series Analysis (TSA)?**
+* In TSA, we analyze the past behavior of a variable in order to predict its future behavior
+* Causes of variation of Time Series Data
+      + Seasons, holidays, etc.
+      + Natural calamities: earthquakes, epidemic, flood, drought, etc.
+      + Political movements or changes, war, etc.
+
+#### Importance of TSA
+
+* Very popular tool for business forecasting
+* Basis for understanding past behavior
+* Can forecast future activities/planning for future operations
+
+#### Components of TSA
+
+* **Time frame**: short, medium, long-term
+      + How far can we predict?
+* **Trend**
+      + General tendenc to grow or decline over a long period
+      + Easy to detect
+      + May be linear or non-linear
+* **Cycle**
+      + An up and down repetitive movement
+      + Repeats itself over a long period of time
+      + Example: business cycle (prosperity, decline, depression, recovery)
+* **Seasonal Variation**
+      + An up and down repetitive movement occuring periodically (short duration)
+      + Factors that cause seasonal variation: climate and weather condition, or custom traditions and habits
+* **Random Variations**
+      + Erratic movements that are not predictable because they don't follow a pattern
+      + Examples: strike, fire, war, flood, earthquake, etc.
+      
+#### TSA Terms
+
+**Stationary Data** - a time series variable exhibiting no significant upward or downward trend over time
+**Nonstationary Data** - a time series variable exhibiting a significant upward or downward trend over time
+**Seasonal Data** - a time series variable exhibiting a repeating pattern at regular intervals over time
+
+### Meaning of Autocorrelation Function (ACF)
+
+What is correlation? From statistics, covariance and correlation measure *joint variability* of two variables (i.e., how the two variables are related). It is a measure of linear dependence between two variables.
+
+In Time Series Analysis, we talk about **autocorrelation**, which is a measure of dependence between two adjacent values of the same variables (same variable at different times). The prefix *auto* is to convey the notion of self-correlation, that is, correlation between variables from the same time series. 
+
+In the context of a single variable, $Y_t$ is the original series and $Y_s$ is a lagged version of the series. *Autocovariance and autocorrelation function five information about the dependence structure of a time series.* If the covariance is significant, it means that the observation at $t_1$ is highly dependent on the observation at $t_-1$. 
+
+### Stationary Processes
+
+The basic idea of stationarity is that the probability laws that govern behavior of the process do not change over time (i.e., the distribution (mean, stdev, autocorrelation) of points in earlier time is equal to the distribution of points at a later time). 
+
+### Partial Autocorrelation Function
+
+The ACF of a stationary process $Y_t$ at lag $h$ 
+        $\rho_{t,t-h} = Corr(Y_t, Y_{t-h})$
+measures the linear dependency among the process variables $Y_t$ and $Y_{t-h}$.
+But the dependence structure among the *intermediate variables* 
+        $Y_t, Y_{t-1}, Y_{t-2},...Y_{t-h+2}, Y_{t-h+1}, Y_{t-h}$
+also plays an important role on the value of the ACF.
+
+The **partial autocorrelation function** attempts to *remove* the influence of intermediate variables. You would have only the direct correlation between $Y_t$ and $T_{t-h}$. This correlation relationship is called the *partial autocorrelation function (PACF)*. 
+
+The ACF and PACF measure the temporal dependency of a stochastic process. You will always build the ACF and PACF before fitting a model to a stochastic process because they give us information about the *autoregressive component* of the series. When ACFs have both increasing (positive) and decreasing (negative) trends we can see seasonality in the dataset. 
+
+### Trend Component
+
+* *Long-term tendency*:
+      + Increasing (upward movement)
+      + Decreasing (downward movement)
+* Trend can be linear or non-linear (e.g. quadratic trend)
+
+#### Linear Trend Component
+
+For a linear trend, we can write
+        $Y_i = \beta_0 + \beta_1t_i + \epsilon_i$
+*Slope* ($\beta_1$) and the *intercept* ($\beta_0$) are the unknown parameters, and $\epsilon_i$ is the *error term* (or residual, is the distance from point $Y_i$ to the estimated trend, $\beta_0 + \beta_1t$). 
+
+##### Linear Trend Estimation and Removal
+1. Model the trend: find $\beta_0$ and $\beta_1$. 
+2. For each observation $t$ remove trend
+        $Y_{detrend_t} = Y_t - (\beta_0 + \beta_1t)$
+
+### Seasonal Component
+* Short-term regular wave-like patterns
+* Observed within 1 year
+* Often monthly or quarterly
+
+#### Seasonal Trend Estimation
+
+Assume the observed series can be represented as
+        $Y_t = \mu_t + X_t$ where $E[X_t] = 0$
+For moonthly seasonal data assume 12 parameters as 
+        $\mu_t = \beta_1$ for $t = 1, 13, 15,...$
+              $= \beta_2$ for $t = 2, 14, 16,...$
+                              ...
+              $= \beta_12$ for $t = 12, 24, 36,...$
+The number of seasons may be less than 12. 
+
+#### Seasonal Trend Removal
+
+1. Model the seasonal trend
+2. For each observation $t$ remove seasonal trend
+        $Y_{deseason_t} = Y_t - (\sum\beta_sD_{t,s})$
+        
+### Series with Deterministic Trend
+
+For both linear and polynomial trends, detrending is accomplished by running a regression and obtaining the series of residuals. The residuals will give you the detrended series. Thats what we call **trend-stationarity**. 
+
+### Series with Stochastic Trend
+
+Some series have what we call **difference-stationarity**. Although trend-stationarity and difference-stationarity are both "trending" over time, the stationarity is achieved by a *distinct procedure*. In the case of difference-stationarity, stationarity is achieved by differencing the series. Sometimes we need to difference the series more than once. 
+
+### Stationarity Tests
+
+#### Stationarity Assessment
+
+* **Mann-Kendall Test** - monotonic trend
+        + Commonly employed to detect deterministic trends in series of environmental data, climate data, or hydrological data
+        + *Cannot be applied to seasonal data*
+        + Hypothesis Test: 
+                $H_0: Y_t$ is $i.i.d.(stationarity)$ 
+                $H_1: Y_t$ follow a trend
+~more~
+
+* **Spearman's Rank Correlation Test** - monotonic trend
+      + Spearman's correlation coefficient is a statistical measure of the strenth of a monotonic relationship
+      + Unlike Pearson's correlation, the relationship does not need to be linear
+      + In other words, if one variable increases so does the other, it *does not matter the porportion of the increase*
+      + Spearman's will always be larger than Pearson's
+      + To verify a monotonic trend in your data, compute the spearman correlation between your data and the series $T$
+      + If the correlation is close to 0, then there is no trend
+      + The function to compute spearman correlation is cor() or the cor.test() from package "stats". The latter provides the significance of the coefficient. 
+      
+* **Dickey-Fuller (ADF) Test** - unit root
+      + The first work on testing for a unit root in time series was done by Dickey and Fuller
+      + Consider the model $Y_t = a + \phi Y_{t-1}+\epsilon_t$
+      + The objective to test
+              $H_0: \phi = 1$ (i.e. contain a unit root)
+              $H_1: \phi < 1$ (i.e. is stationary)
+      + More general case can include more lags, the so called *Augmented Dickey-Fuller (ADF) test*
+      + The ADF test in R is done with the command adf.test() from package "tseries"
+
+
 ## Set up
 
 Today we will work with two datasets. The USGS dataset on discharge at the Eno River and a new dataset we haven't explored yet on wind speed. The data file is available at "./Data/Raw/Wind_Speed_PortArthurTX.csv". It contains average wind speed in monthly time steps (elevation = 5 meters). The data is available from NOAA National Centers for Environmental Information (NCEI) [here][https://www.ncdc.noaa.gov/cdo-web/datasets#GSOM].
@@ -37,12 +208,12 @@ mytheme <- theme_classic(base_size = 14) +
 theme_set(mytheme)
 
 #Read Eno river data
-EnoDischarge <- read.csv("./Data/Processed/USGS_Site02085000_Flow_Processed.csv",
+EnoDischarge <- read.csv("../Data/Processed/USGS_Site02085000_Flow_Processed.csv",
                          stringsAsFactors = TRUE)
 EnoDischarge$datetime <- as.Date(EnoDischarge$datetime, format = "%Y-%m-%d")
 
 #Read wind speed data
-wind_data <- read.csv(file="./Data/Raw/Wind_Speed_PortArthurTX.csv",header=TRUE,
+wind_data <- read.csv(file="../Data/Raw/Wind_Speed_PortArthurTX.csv",header=TRUE,
                       stringsAsFactors = TRUE)
 wind_data$DATE <- ym(wind_data$DATE)
 
@@ -222,7 +393,7 @@ Note that wind speed has a seasonal cycle. We might be interested in knowing how
 f_month <- month(first(wind_data_clean$DATE))
 f_year <- year(first(wind_data_clean$DATE))
 wind_data_ts <- ts(wind_data_clean$AWND.clean,
-                   start=c(f_year,f_month),
+                   start=c(f_year,f_month), #first year and first month
                    frequency=12) 
 
 #decompose
@@ -255,7 +426,7 @@ print(wind_data_plot)
 
 What would we conclude based on these findings? 
 
-> Answer:
+> Answer: There is a decreasing trend in wind speed over time. 
 
 
 ## Forecasting with Autoregressive and Moving Average Models (ARMA)
