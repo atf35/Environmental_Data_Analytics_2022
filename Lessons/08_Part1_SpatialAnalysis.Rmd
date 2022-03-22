@@ -100,7 +100,7 @@ mapview(GasPlants)
 ```{r Create a spatial dataframe from coordinate data}
 
 #Read in our processed EPA Air dataset, setting the Date column to be dates
-EPAair <- read.csv("./Data/Processed/EPAair_O3_PM25_NC2021_Processed.csv", stringsAsFactors = TRUE) %>% 
+EPAair <- read.csv("./Data/Processed/EPAair_O3_PM25_NC2021_Processed.csv", stringsAsFactors = TRUE) %>%
   mutate(Date = ymd(Date))
 
 #Wrangle so each site has only one record, computing mean ozone and PM2.5 at that site
@@ -115,10 +115,19 @@ EPAair.sites <- EPAair %>%
 
 #Convert to a spatial dataframe
 EPAair.sf <- EPAair.sites %>% 
-  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
+  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'), #x,y
            crs=4326)
 
 #View the data using the methods above...
+
+#View using sf plot
+plot(EPAair.sf['geometry'],pch=16)
+
+#View using ggplot
+ggplot(data=EPAair.sf) + geom_sf()
+
+#View using mapview
+mapview(EPAair.sf)
 
 ```
 
@@ -235,7 +244,7 @@ ggplot() +
   geom_sf(data = EPAair.sf.utm,color='blue') + 
   geom_sf(data = GasPlants.utm,color='red',shape='O') 
 
-#Create a distance matrix between the point in each dataset
+#Create a distance matrix (pairwise=T) between the point in each dataset
 distance_matrix <- st_distance(EPAair.sf.utm, GasPlants.utm, pairwise=T)
 
 #Compute the mean of each row (each EPA site)

@@ -43,12 +43,18 @@ The typical set up procedure: confirm the working directory and import libraries
 #Examine the working directory
 getwd()
 
+#install "leafsync"
+#install.packages("leafsync")
+#install.packages("leaflet")
+
 #Import libraries
 library(tidyverse)
 library(lubridate)
 library(sf)
 library(mapview)
 library(RColorBrewer)
+library(leafsync)
+library(leaflet)
 ```
 
 # 2 READING IN SPATIAL DATA
@@ -70,12 +76,14 @@ epa_pm25_sites_sf <- read_csv('./Data/Raw/EPAair_PM25_NC2018_raw.csv') %>%
 #Inspect the object
 class(epa_pm25_sites_sf)
 
-#What is its CRS again?
+#What is its CRS again? NAD83 
 st_crs(epa_pm25_sites_sf)$epsg
 
 #Plot the data
 ggplot(data=epa_pm25_sites_sf) +
   geom_sf()
+
+mapview(epa_pm25_sites_sf)
 ```
 
 ## 2.2 Reading shapefiles into R with `sf`
@@ -89,7 +97,7 @@ Below we read in the USA counties shapefile, filtering for just the NC features 
 ```{r read.filtered.records.from.shapefile.to.sf.object}
 #
 counties_sf<- st_read('./Data/Spatial/cb_2018_us_county_20m.shp') %>% 
-  filter(STATEFP == 37) #Filter for just NC Counties
+  filter(STATEFP == 37) #Filter for just NC Counties (categorical names)
 
 #
 colnames(counties_sf)
@@ -109,6 +117,9 @@ head(counties_sf)
 
 #Plot the data, colored by area of land in each county
 mapView(counties_sf, zcol = "AWATER")
+
+ggplot(counties_sf, aes(color = "AWATER")) +
+    geom_sf()
 ```
 
 ### 2.2.2 Read in and explore 8-digit HUC watersheds for NC
@@ -117,20 +128,23 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r read HUCs shapefile}
 #Read the shapefile into an sf dataframe named "huc8_sf"
-
+huc8_sf <- st_read('./Data/Spatial/NCHUC8.shp')
 
 #Reveal the columns
+colnames(huc8_sf)
 
-
-#Check the CRS
-
+#Check the CRS: WGS 84 
+st_crs(huc8_sf) 
 
 #Examine some records
-
+head(counties_sf)
 
 #View the data as a map, colored by the acreage in each
+mapView(huc8_sf, zcol = "ACRES")
 
-
+ggplot(data = huc8_sf) +
+  geom_sf(aes(fill = ACRES)) +
+  scale_fill_continuous(type = "viridis")
 ```
 
 ### 2.2.3 Challenge!
@@ -139,11 +153,19 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r Select the Upper Neuse HUC 8}
 #Read the shapefile into an sf dataframe
-
+UpperNeuse_sf <- st_read('./Data/Spatial/NCHUC8.shp') %>% 
+  filter(SUBBASIN == "Upper Neuse")
 
 
 #Create a map
+mapView(huc8_sf, col.regions = 'orange') +
+  mapView(UpperNeuse_sf, col.regions = 'purple')
 
+
+ggplot() +
+  geom_sf(data = huc8_sf, fill = "orange") +
+  geom_sf(data = UpperNeuse_sf, fill = "purple")
+  
 
 ```
 
@@ -205,7 +227,7 @@ We'll focus on just a few variables: Estimates of people in poverty ("E_POV") an
 #Read the 2018 SVI county-level dataset for NC
 svi2018_nc_raw <- read.csv(
   'https://svi.cdc.gov/Documents/Data/2018_SVI_Data/CSV/States_Counties/NorthCarolina_COUNTY.csv',
-  colClasses = c('FIPS' = 'factor')) %>% 
+  colClasses = c('FIPS' = 'factor')) %>% #read FIPS as factors instead of numbers to keep the leading 0
   select(COUNTY, FIPS, LOCATION, E_TOTPOP, E_POV, E_MINRTY)
 
 #Check structure
@@ -239,17 +261,19 @@ ggplot() +
 
 ```{r}
 #Compute HUC8 wind energy
-
-
-
+wind_energy_huc8 <- read.csv('https://raw.githubusercontent.com/ENV859/EnviroAtlasData/main/Wind_Energy.csv',
+                             colClasses = c('HUC_12' = 'factor')) %>% 
+  mutate(HUC_8 = substr(HUC_12, 1, 8)) %>% 
+  group_by(HUC_8) %>% 
+  summarise(AvgWindEnergy = sum(AvgWindEnergy)) 
 
 #Join to HUC_8 features
-
-
-
+huc8_sf_wind <- huc8_sf %>% 
+  left_join(wind_energy_huc8, by = c("HUC_8" = "HUC_8"))
 
 #View the outputs
-
+ggplot() +
+  geom_sf(data = huc8_sf_wind, aes(fill = AvgWindEnergy))
 
 
 ```
@@ -274,17 +298,17 @@ mapview(state_sf)
 
 ```{r Aggregate the HUC data on an attribute, saving as huc2_sf}
 #List the unique values in the DWQ_Basin field
-
-
-
+unique(huc8_sf$DWQ_Basin)
 
 #Summarize on DWQ Basin value
+huc2_sf <- huc8_sf %>% 
+  group_by(DWQ_Basin) %>% 
+  summarise(ACRES = sum(ACRES),
+            SQ_MILES = sum(SQ_MILES))
 
-
-
-
-  
 #Map the data
+mapview(huc2_sf,
+        zcol = "ACRES")
 
 ```
 
@@ -341,6 +365,7 @@ myMap
 neuse_intersect_1 <- counties_sf_utm[neuse_sf,]
 
 #Select intersecting counties using the `filter()` command
+    # "x= .," just tells R to take the counties_sf_utm dataframe and find all the counties that intersect with the y = neuse_sf 
 neuse_intersect_2 <- counties_sf_utm %>% 
   filter(st_intersects(x = ., y = neuse_sf, sparse = FALSE))
 
@@ -364,19 +389,35 @@ mapview(neuse_counties_sf, zcol='Area_m2')
 
 ```{r EXERCISE: Clipping}
 #Select the Triangle County from the 
-
-
-
+triangle_co <- counties_sf_utm %>% 
+  filter(NAME %in% c("Catham", "Durham", "Orange", "Wake"))
   
 #Grab the intersecting HUC_8s
+triangle_HUCs <- huc8_sf_utm %>% 
+  filter(st_intersects(x = ., y = triangle_co, sparse = F))
+triangle_HUCs <- huc8_sf_utm[triangle_co,] #select triangle_co rows, and all columns
 
+ggplot() +
+  geom_sf(data = triangle_co, color = "grey") +
+  geom_sf(data = huc8_sf_utm, color = "green", fill = NA) +
+  geom_sf(data = triangle_HUCs, color = "blue", fill = NA)
+
+#mapview(the_hucs) + mapview(the_triangle,
+#                            alpha.regions = 0,
+#                            color = 'red')
 
 
 #Intersect the HUC_8s
+triangle_HUCs.clipped <- triangle_co %>% 
+  st_intersection(huc8_sf_utm)
 
+#mapview(the_hucs) + mapview(the_triangle,
+#                            alpha.regions = 0,
+#                            color = 'red')
 
-
-
+ggplot() +
+  geom_sf(data = triangle_co, color = "grey") +
+  geom_sf(data = triangle_HUCs.clipped, color = "red", fill = NA)
 ```
 
 ## 3.3 Geometry manipulations
@@ -460,10 +501,16 @@ mapView(counties_sf[resultMask,])
 > Questions: how might we use the `st_buffer` function to show all counties within 30km of the site?
 
 ```{r Select counties within a 30 km area from the site}
+site_30km <- st_buffer(theSite_sfc_transformed, 30000)
+mapview(site_30km)
 
+resultMask_30km <- st_intersects(counties_sf_utm,
+                                 site_30km,
+                                 sparse = FALSE)
 
+selCounties_30km <- counties_sf_utm[resultMask_30km,]
+mapview(selCounties_30km)
 
-                            
 ```
 
 # 4. VISUALIZATION
@@ -507,7 +554,7 @@ huc2_WGS84<- st_transform(huc2_sf,c=4326)
 #Now plot with leaflet: no errors as all layers are in Leaflet's native CRS (WGS84)
 leaflet() %>% addTiles() %>% 
   addPolygons(data=counties_WGS84,weight=1,color='red') %>% 
-  addPolygons(data=huc8_sf,weight=1)
+  addPolygons(data=huc8s_WGS84,weight=1)
 ```
 
 ### 4.2.2 Changing basemaps in Leaflet
